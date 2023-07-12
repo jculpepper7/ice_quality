@@ -1,3 +1,11 @@
+#Data files
+*.csv
+*.txt
+*.nc
+
+#Data folder
+data*
+
 # History files
 .Rhistory
 .Rapp.history
