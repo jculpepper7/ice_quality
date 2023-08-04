@@ -9,7 +9,7 @@ library(tidyverse)
 library(janitor)
 library(lubridate)
 library(here)
-library()
+library(wql)
 
 
 # 1. Import data ----------------------------------------------------------
@@ -19,21 +19,21 @@ ice_raw <- read_csv(here('data/ice_quality_data.csv'))
 
 # 2. Clean data frame -----------------------------------------------------
 
-ice_clean <- ice_raw %>% 
-  clean_names() %>% 
-  rename(
-    date = date_of_sampling,
-    snow_height_cm = height_of_snow_on_ice_in_cm,
-    slush_height_cm = height_of_slush_on_ice_in_cm,
-    ice_total_cm = total_ice_thickness_without_the_snow_slush_on_ice_cm,
-    white_ice_cm = white_ice_thickness_i_e_the_upper_ice_layer_in_cm,
-    black_ice_cm = black_ice_thickness_i_e_the_lower_ice_layer_in_cm
-  ) %>% 
-  select(-contact_person) %>% 
-  mutate(
-    date = mdy(date),
-    snow_height_cm = grep(',', '.')
-  )
+# ice_clean <- ice_raw %>% 
+#   clean_names() %>% 
+#   rename(
+#     date = date_of_sampling,
+#     snow_height_cm = height_of_snow_on_ice_in_cm,
+#     slush_height_cm = height_of_slush_on_ice_in_cm,
+#     ice_total_cm = total_ice_thickness_without_the_snow_slush_on_ice_cm,
+#     white_ice_cm = white_ice_thickness_i_e_the_upper_ice_layer_in_cm,
+#     black_ice_cm = black_ice_thickness_i_e_the_lower_ice_layer_in_cm
+#   ) %>% 
+  # select(-contact_person) %>% 
+  # mutate(
+  #   date = mdy(date),
+  #   snow_height_cm = grep(',', '.')
+  # )
 
 ice_clean_2 <- ice_raw %>% 
   select(3,4)
@@ -103,7 +103,7 @@ iq_ts3 <- iq_ts2 %>%
 ggplot(data = iq_ts3)+
   geom_smooth(aes(x = year, y = total_mean), method = 'lm', color = 'grey25', se = F)+
   geom_smooth(aes(x = year, y = black_mean), method = 'lm', color = 'grey50', se = F)+
-  geom_smooth(aes(x = year, y = white_mean), method = 'lm', color = 'grey75', se = F)+
+  geom_smooth(aes(x = year, y = white_mean), method = 'lm', color = 'grey75', se = F, linetype = 'dashed')+
   geom_point(aes(x = year, y = total_mean), shape = 'square', color = 'grey25', size = 3)+
   geom_point(aes(x = year, y = black_mean), shape = 'triangle', color = 'grey50', size = 3)+
   geom_point(aes(x = year, y = white_mean), shape = 'circle', color = 'grey75', size = 3)+
@@ -114,6 +114,8 @@ ggplot(data = iq_ts3)+
     axis.title = element_text(size = 25),
     axis.text = element_text(size = 22)
   )
+
+ggsave(here('results/'))
 
 # Visualize white ice ratio
 ggplot(data = iq_ts3)+
@@ -129,10 +131,6 @@ ggplot(data = iq_ts3)+
 
 
 # 5. Mann-Kendall test on Zdorovennova 2021 data --------------------------
-
-library(Kendall)
-library(trend)
-library(wql)
 
 mk_total_ice <- mannKen(iq_ts2$total_ice_avg_cm)
 mk_total_ice #p value: 0.0005, significant trend, sen = -0.5 cm/yr

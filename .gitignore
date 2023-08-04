@@ -5,8 +5,10 @@
 *.pdf
 *.png
 *.svg
-#Data folder
+
+#Folder
 data*
+results*
 
 # History files
 .Rhistory
