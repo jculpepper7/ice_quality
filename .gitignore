@@ -2,7 +2,9 @@
 *.csv
 *.txt
 *.nc
-
+*.pdf
+*.png
+*.svg
 #Data folder
 data*
 
