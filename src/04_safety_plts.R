@@ -100,86 +100,11 @@ seasonal_ice_thick = ice_thickness[idx_lon_id2,idx_lat_id2,]
 
 # 2e. Create time series based on temperature threshold-------------------------
 
-seasonal_ice_thick1 = seasonal_ice_thick[,,idx_year1]*100 #convert to cm
-seasonal_ice_thick2 = seasonal_ice_thick[,,idx_year2]*100
-seasonal_ice_thick3 = seasonal_ice_thick[,,idx_year3]*100
-seasonal_ice_thick4 = seasonal_ice_thick[,,idx_year4]*100
-seasonal_ice_thick5 = seasonal_ice_thick[,,idx_year5]*100
-
-#Functio to extract first DOY (starting in Sept 1) when ice is above 13cm in thickness
-my_ice_on_func <- function(y){
-  
-  y2 <- NA
-  if(all(!is.na(y))){
-    y2 <- -1 #Eliminate lakes where not all time series has a value
-    if(any(y>13)){
-      y2 <- min(which(y>13))
-    }
-    if(y2==1){
-      y2 <- -2 #eliminate pixels where lake is is 13cm on day 1
-    }
-  }
-  
-  return(y2)
-  
-}
-
-#CAUTION: anomalies will now have an issue due to negative values (-1, -2)
-
-# Use above ice on function to extract day of year (DOY) that   
-x2 <- apply(seasonal_ice_thick2, c(1,2), my_ice_on_func) 
-x3 <- apply(seasonal_ice_thick3, c(1,2), my_ice_on_func) 
-x4 <- apply(seasonal_ice_thick4, c(1,2), my_ice_on_func) 
-x5 <- apply(seasonal_ice_thick5, c(1,2), my_ice_on_func) 
-
-
-
-
-#Remove -2 and -1 values for the anomalies
-x2b <- x2
-
-x3b <- x3
-
-x4b <- x4
-
-x5b <- x5
-
-# Historic condition
-x2b[x2b==-2] <- NA #for anomaly calculations to eliminate the negative values
-x2b[x2b==-1] <- NA
-
-# 1 degree warming
-x3b[x3b==-2] <- NA #for anomaly calculations to eliminate the negative values
-x3b[x3b==-1] <- NA
-
-# 2 degrees warming
-x4b[x4b==-2] <- NA #for anomaly calculations to eliminate the negative values
-x4b[x4b==-1] <- NA
-
-# 4 degrees warming
-x5b[x5b==-2] <- NA #for anomaly calculations to eliminate the negative values
-x5b[x5b==-1] <- NA
-
-# Anomalies
-x3_anom <- x3b - x2b #max = 53, min = 3, median = 33, mean = 33, n = 2756
-x4_anom <- x2b - x4b #max = 59, min = -6, median = 36, mean = 35, n = 2691
-x5_anom <- x2b - x5b #max = 66, min = -8, median = 35, mean = 34, n = 2523
-
-#range(x5_anom, na.rm = T)
-
-#Need script 00 mapping function to run this code chunk
-mapCDFtemp(lat = ilat_nh, 
-           lon = ilon_id, 
-           idat = x5,
-           grid_size = 1.25,
-           limits = c(min(x5, na.rm = T), max(x5, na.rm = T)), #c(0,165) #These numbers are the maximum day of year of formation for the 4 degree warming scenario
-           name_cmocean = 'balance', 
-           direction = 1, 
-           titletext = '4 Degree Warming (13 cm)'
-)
-
-#ggsave(here('results/plots/DOY_13cm_4deg.png'), dpi = 300, width = 9, height = 9, units = 'in')
-
+seasonal_ice_thick1 = seasonal_ice_thick[,,idx_year1] 
+seasonal_ice_thick2 = seasonal_ice_thick[,,idx_year2]
+seasonal_ice_thick3 = seasonal_ice_thick[,,idx_year3]
+seasonal_ice_thick4 = seasonal_ice_thick[,,idx_year4]
+seasonal_ice_thick5 = seasonal_ice_thick[,,idx_year5]
 
 #The below code is to access the time series and plot it
 test_hist <- apply(seasonal_ice_thick2, 3, mean, na.rm = TRUE) 
@@ -203,10 +128,10 @@ ice_thick_df <- idoy2 %>%
     warming_4_degC = 5
   ) %>% 
   mutate(
-    historic = round(historic, 1),
-    warming_1_degC = round(warming_1_degC, 1),
-    warming_2_degC = round(warming_2_degC, 1),
-    warming_4_degC = round(warming_4_degC, 1),
+    historic = round(historic, 3),
+    warming_1_degC = round(warming_1_degC, 3),
+    warming_2_degC = round(warming_2_degC, 3),
+    warming_4_degC = round(warming_4_degC, 3),
     # date_1C = as_date(idoy, origin = '2009-12-31'),
     # date_2C = as_date(idoy, origin = '2041-12-31'),
     # date_4C = as_date(idoy, origin = '2088-12-31'),
@@ -283,10 +208,10 @@ ice_thick_df2 <- ice_thick_hist %>%
     season = as.factor(if_else(month < 3 | month == 12, 'winter', 'spring'))
   )
 
-ice_thick_winter <- ice_thick_df2 %>% 
-  filter(
-    season == 'winter'
-  )
+# ice_thick_winter <- ice_thick_df2 %>% 
+#   filter(
+#     season == 'winter'
+#   )
 
 ggplot(data = ice_thick_df2)+
   geom_boxplot(aes(x = season, y = ice_thickness, fill = scenario))+
@@ -298,6 +223,77 @@ ggplot(data = ice_thick_df2)+
     text = element_text(size = 25)
   )+
   xlab('')+
-  ylab('Ice Thickness (cm)')+
+  ylab('Ice Thickness (m)')+
   guides(fill = guide_legend(title = ' '))
 
+ggsave(here('results/thickness_bx_plt.png'), dpi = 300, units = 'in', height = 5.5, width = 7.5)
+
+ice_thick_df2_winter <- ice_thick_df2 %>% 
+  filter(
+   season == 'winter' 
+  ) %>%
+  group_by(scenario) %>% 
+  summarise(
+    mean_thickness = round(mean(ice_thickness), 2)
+  )
+
+ice_thick_df2_spring <- ice_thick_df2 %>% 
+  filter(
+    season == 'spring'
+  ) %>% 
+  group_by(scenario) %>% 
+  summarise(
+    mean_thickness = round(mean(ice_thickness), 2)
+  )
+
+
+# 3. Monthly drowning figure ----------------------------------------------
+
+monthly_drownings <- read_csv(here('data/monthly_safety_data.csv'))
+
+month_drwn_clean <- monthly_drownings %>% 
+  filter(
+    month != 10,
+    month != 11
+  ) %>% 
+  mutate(
+    season = if_else(month < 3 | month == 12, 'Winter', 'Spring'),
+    month = as.factor(month)
+  )
+
+ggplot(data = month_drwn_clean)+
+  geom_boxplot(aes(x = season, y = drownings_per_million_mean, fill = season))+
+  theme_classic()+
+  scale_fill_cmocean(name = 'ice', discrete = TRUE, direction = -1, start = 0.3, end = 0.8)+
+  scale_x_discrete(labels = c('Spring', 'Winter'))+
+  theme(
+    legend.position = 'bottom',
+    text = element_text(size = 25)
+  )+
+  xlab('')+
+  ylab('Drownings per million')+
+  guides(fill = guide_legend(title = ' '))
+
+
+#Look at means and medians
+drowning_table <- month_drwn_clean %>% 
+  group_by(season) %>% 
+  summarise(
+    mean_drownings_per_million = mean(drownings_per_million_mean),
+    median_drownings_per_million = median(drownings_per_million_mean)
+  )
+
+winter_drownings <- month_drwn_clean %>% 
+  filter(
+    season == "Winter"
+  )
+
+spring_drownings <- month_drwn_clean %>% 
+  filter(
+    season == "Spring"
+  )
+
+wilcox.test(winter_drownings$drownings_per_million_mean, spring_drownings$drownings_per_million_mean)
+#p value = 0.4944, means not significantly different
+
+ggsave(here('results/drowning_boxplt.png'), dpi = 300, units = 'in', height = 5.5, width = 7.5)

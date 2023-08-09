@@ -19,16 +19,16 @@ ice_raw <- read_csv(here('data/ice_quality_data.csv'))
 
 # 2. Clean data frame -----------------------------------------------------
 
-# ice_clean <- ice_raw %>% 
-#   clean_names() %>% 
-#   rename(
-#     date = date_of_sampling,
-#     snow_height_cm = height_of_snow_on_ice_in_cm,
-#     slush_height_cm = height_of_slush_on_ice_in_cm,
-#     ice_total_cm = total_ice_thickness_without_the_snow_slush_on_ice_cm,
-#     white_ice_cm = white_ice_thickness_i_e_the_upper_ice_layer_in_cm,
-#     black_ice_cm = black_ice_thickness_i_e_the_lower_ice_layer_in_cm
-#   ) %>% 
+ice_clean <- ice_raw %>%
+  clean_names() %>%
+  rename(
+    date = date_of_sampling,
+    snow_height_cm = height_of_snow_on_ice_in_cm,
+    slush_height_cm = height_of_slush_on_ice_in_cm,
+    ice_total_cm = total_ice_thickness_without_the_snow_slush_on_ice_cm,
+    white_ice_cm = white_ice_thickness_i_e_the_upper_ice_layer_in_cm,
+    black_ice_cm = black_ice_thickness_i_e_the_lower_ice_layer_in_cm
+  ) #%>%
   # select(-contact_person) %>% 
   # mutate(
   #   date = mdy(date),
@@ -64,7 +64,7 @@ iq_ts2 <- iq_ts %>%
 #Plot total, black, and white ice thickness
 ggplot(data = iq_ts2)+
   geom_smooth(aes(x = date, y = total_ice_avg_cm), method = 'lm', color = 'grey25', se = F)+
-  geom_smooth(aes(x = date, y = black_ice_avg_cm), method = 'lm', color = 'grey50', se = F, linetype = 'dashed')+
+  geom_smooth(aes(x = date, y = black_ice_avg_cm), method = 'lm', color = 'grey50', se = F)+
   geom_smooth(aes(x = date, y = white_ice_avg_cm), method = 'lm', color = 'grey75', se = F, linetype = 'dashed')+
   geom_point(aes(x = date, y = total_ice_avg_cm, shape = 'Total Ice'), color = 'grey25', size = 3)+
   geom_point(aes(x = date, y = black_ice_avg_cm, shape = 'Black Ice'), color = 'grey50', size = 3)+
@@ -80,7 +80,7 @@ ggplot(data = iq_ts2)+
   )
 
 #Save image 
-ggsave(here('results/iq_ts_draft.png'), dpi = 300, units = 'in', width = 14, height = 10)
+ggsave(here('results/iq_ts_draft.png'), dpi = 300, units = 'in', width = 11, height = 10)
 
 #What if we average by year because only two measurements per year 
 #does not say much about the winter/spring progression of ice quality?
@@ -107,15 +107,15 @@ ggplot(data = iq_ts3)+
   geom_point(aes(x = year, y = total_mean), shape = 'square', color = 'grey25', size = 3)+
   geom_point(aes(x = year, y = black_mean), shape = 'triangle', color = 'grey50', size = 3)+
   geom_point(aes(x = year, y = white_mean), shape = 'circle', color = 'grey75', size = 3)+
-  ylab('Ice Thickness (cm)')+
-  xlab('Year')+
+  ylab('')+
+  xlab('')+
   theme_classic()+
   theme(
     axis.title = element_text(size = 25),
     axis.text = element_text(size = 22)
   )
 
-ggsave(here('results/'))
+ggsave(here('results/iq_ts_final.png'), dpi = 300, units = 'in', height = 10, width = 11)
 
 # Visualize white ice ratio
 ggplot(data = iq_ts3)+

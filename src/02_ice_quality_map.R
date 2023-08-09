@@ -6,6 +6,7 @@ library(patchwork)
 library(ggpubr)
 library(svglite)
 library(plotly)
+library(cmocean)
 
 
 # 1. Get data -------------------------------------------------------------
@@ -99,13 +100,13 @@ map_data <- expand.grid(lon_nh, lat_nh) %>%
   #Start plot, feeding in the previous dataframe from expand.grid
 ice_thick_1C_map  <- ggplot()+
   geom_point(data = map_data, aes(x = lon, y = lat, color = idat), size = 2.5, shape = 'square')+
-  scale_color_viridis(name = 'Ice Duration Anomaly', 
-                      na.value = 'transparent', 
-                      option = 'A', 
-                      limits = c(min(ice_thk_anom[,,itime_id == 2042], na.rm = T), max(ice_thk_anom[,, itime_id == 2042], na.rm = T)), 
-                      direction = 1)+#,
-  #values = c(0, scales::rescale(color_breaks, from = range(idat, na.rm = T)), 1))+
-  #scale_color_cmocean(name=name_cmocean, direction = direction, limits = limits, na.value = 'transparent')+
+  # scale_color_viridis(name = 'Ice Duration Anomaly', 
+  #                     na.value = 'transparent', 
+  #                     option = 'A', 
+  #                     limits = c(min(ice_thk_anom[,,itime_id == 2042], na.rm = T), max(ice_thk_anom[,, itime_id == 2042], na.rm = T)), 
+  #                     direction = 1)+#,
+
+  scale_color_cmocean(name='ice', direction = 1, limits = c(min(ice_thk_anom[,,itime_id == 2042], na.rm = T), max(ice_thk_anom[,, itime_id == 2042], na.rm = T)), na.value = 'transparent')+
   
   #Add the map layer
   borders('world', colour = 'grey15', fill = 'NA')+
@@ -131,7 +132,7 @@ ice_thick_1C_map  <- ggplot()+
   geom_point(data = ice_clean_2, aes(x = Longitude, y = Latitude), size = 3, shape = 'circle')+
     
   #Title text etc.
-  ggtitle('Ice Thickness Anomaly 1°C')+
+  ggtitle('')+
   xlab('')+
   ylab('')
 ice_thick_1C_map
@@ -148,13 +149,15 @@ map_data2 <- expand.grid(lon_nh, lat_nh) %>%
 #Start plot, feeding in the previous dataframe from expand.grid
 ice_thick_2C_map  <- ggplot()+
   geom_point(data = map_data2, aes(x = lon, y = lat, color = idat), size = 2.5, shape = 'square')+
-  scale_color_viridis(name = 'Ice Duration Anomaly', 
-                      na.value = 'transparent', 
-                      option = 'A', 
+  # scale_color_viridis(name = 'Ice Duration Anomaly', 
+  #                     na.value = 'transparent', 
+  #                     option = 'A', 
+  #                     limits = c(min(ice_thk_anom[,,itime_id == 2042], na.rm = T), max(ice_thk_anom[,, itime_id == 2042], na.rm = T)), 
+  #                     direction = 1)+#,
+  scale_color_cmocean(name = 'ice', 
+                      direction = 1, 
                       limits = c(min(ice_thk_anom[,,itime_id == 2042], na.rm = T), max(ice_thk_anom[,, itime_id == 2042], na.rm = T)), 
-                      direction = 1)+#,
-  #values = c(0, scales::rescale(color_breaks, from = range(idat, na.rm = T)), 1))+
-  #scale_color_cmocean(name=name_cmocean, direction = direction, limits = limits, na.value = 'transparent')+
+                      na.value = 'transparent')+
   
   #Add the map layer
   borders('world', colour = 'grey15', fill = 'NA')+
@@ -180,7 +183,7 @@ ice_thick_2C_map  <- ggplot()+
   geom_point(data = ice_clean_2, aes(x = Longitude, y = Latitude), size = 3, shape = 'circle')+
   
   #Title text etc.
-  ggtitle('Ice Thickness Anomaly 2°C')+
+  ggtitle('')+
   xlab('')+
   ylab('')
 ice_thick_2C_map
@@ -206,16 +209,17 @@ ice_ts_plt <- ggplot(data = thk_anom_ts)+
   geom_ribbon(aes(x = year, y = ice_thk, ymin = sd_neg, ymax = sd_pos), fill = 'grey50', alpha = .2) +
   geom_point(aes(x = 2010, y = ice_thk[161], color = '1°C'), shape = 1, size = 5, stroke = 4)+ #ice thickness anomaly at 1C Warming = -0.0727m or -7.27cm
   geom_point(aes(x = 2042, y = ice_thk[193], color = '2°C'), shape = 1, size = 5, stroke = 4)+ #ice thickness anomaly at 2C Warming = -0.121m or -12.1cm
-  scale_color_manual('Warming\nScenario', values = c("#E69F00", "#D55E00"))+
-  xlab('Years') + 
-  ylab('Ice Thickness Anomaly (m)')+
+  scale_color_manual('', values = c("#E69F00", "#D55E00"))+
+  xlab('') + 
+  ylab('')+
   theme_classic() +
   theme(
-    text = element_text(size = 25)
+    text = element_text(size = 25),
+    legend.position = c(0.8, 0.8)
   )
 ice_ts_plt
 
-ggsave(here('results/ice_thk_ts.png'), dpi = 300, units = 'in', height = 10, width = 14)
+ggsave(here('results/ice_thk_ts.png'), dpi = 300, units = 'in', height = 10, width = 11)
 
 
 ggplotly(ice_ts_plt)
