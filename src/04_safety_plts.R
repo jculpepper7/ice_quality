@@ -79,7 +79,7 @@ idoy5 <- iyear5 - iyear5[1] + 1
 
 
 #Check starting times
-iyear2[1]  #Appear to be out of sync
+iyear2[1]  #Appear to be out of sync #Oh! I figured this out. It's just because of leap years. The model output doesn't account for them, so when translating them into lubridate, the timing looks off.
 iyear3[1]  
 iyear4[1] 
 iyear5[1]
@@ -208,6 +208,12 @@ ice_thick_df2 <- ice_thick_hist %>%
     season = as.factor(if_else(month < 3 | month == 12, 'winter', 'spring'))
   )
 
+ice_thick_df_summary <- ice_thick_df2 %>% 
+  group_by(scenario, season) %>% 
+  summarise(
+    mean = mean(ice_thickness)
+  )
+
 # ice_thick_winter <- ice_thick_df2 %>% 
 #   filter(
 #     season == 'winter'
@@ -220,13 +226,14 @@ ggplot(data = ice_thick_df2)+
   scale_x_discrete(labels = c('Spring', 'Winter'))+
   theme(
     legend.position = 'bottom',
-    text = element_text(size = 25)
+    text = element_text(size = 40)
   )+
   xlab('')+
   ylab('Ice Thickness (m)')+
   guides(fill = guide_legend(title = ' '))
 
-ggsave(here('results/thickness_bx_plt.png'), dpi = 300, units = 'in', height = 5.5, width = 7.5)
+#ggsave(here('results/thickness_bx_plt_resized.png'), dpi = 300, units = 'in', height = 10, width = 10)
+ggsave(here('results/figure_3d.pdf'), dpi = 300, units = 'in', height = 10, width = 10)
 
 ice_thick_df2_winter <- ice_thick_df2 %>% 
   filter(
@@ -257,22 +264,34 @@ month_drwn_clean <- monthly_drownings %>%
     month != 11
   ) %>% 
   mutate(
+    drownings_per_thousand_mean = drownings_per_million_mean/0.01,
     season = if_else(month < 3 | month == 12, 'Winter', 'Spring'),
-    month = as.factor(month)
-  )
+    month = as.factor(month),
+    month_name = as.factor(if_else(month == 1, 'January', 
+                                   if_else(month == 2, 'February',
+                                           if_else(month == 3, 'March',
+                                                   if_else(month == 4, 'April',
+                                                           if_else(month == 5, "May",
+                                                                   "December")))))
+                           ),
+    month_grouped = factor(month_name, c('December', 'January', 'February', 'March', 'April', 'May')) #https://statisticsglobe.com/reorder-boxplot-in-r#example-2-draw-boxplot-with-manually-specified-order-using-ggplot2-package
+  ) 
 
-ggplot(data = month_drwn_clean)+
-  geom_boxplot(aes(x = season, y = drownings_per_million_mean, fill = season))+
+ggplot(data = month_drwn_clean %>% filter(month_grouped !='May'))+
+  geom_boxplot(aes(x = month_grouped, y = drownings_per_thousand_mean, fill = month_name))+ #Using month_grouped to reorder boxplots (rather than having them alphabetical -- se link above in line 269)
+  geom_jitter(aes(x = month_grouped, y = drownings_per_thousand_mean), alpha = 0.5)+
   theme_classic()+
-  scale_fill_cmocean(name = 'ice', discrete = TRUE, direction = -1, start = 0.3, end = 0.8)+
-  scale_x_discrete(labels = c('Spring', 'Winter'))+
+  scale_fill_cmocean(name = 'ice', discrete = TRUE, direction = -1, start = 0.3, end = 1)+
+  scale_y_continuous(breaks = round(seq(0,400,50)))+
   theme(
-    legend.position = 'bottom',
-    text = element_text(size = 25)
+    legend.position = 'none',
+    text = element_text(size = 25),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
   )+
   xlab('')+
-  ylab('Drownings per million')+
-  guides(fill = guide_legend(title = ' '))
+  ylab('Drownings per \nten thousand')
+
+ggsave(here('results/drowning_boxplt.pdf'), dpi = 300, units = 'in', height = 5.5, width = 7.5)
 
 
 #Look at means and medians
@@ -296,4 +315,3 @@ spring_drownings <- month_drwn_clean %>%
 wilcox.test(winter_drownings$drownings_per_million_mean, spring_drownings$drownings_per_million_mean)
 #p value = 0.4944, means not significantly different
 
-ggsave(here('results/drowning_boxplt.png'), dpi = 300, units = 'in', height = 5.5, width = 7.5)

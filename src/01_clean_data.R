@@ -72,7 +72,7 @@ ggplot(data = iq_ts2)+
   ylab('Ice Thickness (cm)')+
   xlab('')+
   theme_classic()+
-  #scale_shape_discrete('', breaks = c('Total Ice', 'Black Ice', 'White Ice'))+
+  scale_shape_discrete('', breaks = c('Total Ice', 'Black Ice', 'White Ice'))+
   theme(
     axis.title = element_text(size = 25),
     axis.text = element_text(size = 22),
@@ -80,7 +80,7 @@ ggplot(data = iq_ts2)+
   )
 
 #Save image 
-ggsave(here('results/iq_ts_draft.png'), dpi = 300, units = 'in', width = 11, height = 10)
+ggsave(here('results/iq_ts_draft.pdf'), dpi = 300, units = 'in', width = 13.5, height = 9.5)
 
 #What if we average by year because only two measurements per year 
 #does not say much about the winter/spring progression of ice quality?
@@ -104,18 +104,20 @@ ggplot(data = iq_ts3)+
   geom_smooth(aes(x = year, y = total_mean), method = 'lm', color = 'grey25', se = F)+
   geom_smooth(aes(x = year, y = black_mean), method = 'lm', color = 'grey50', se = F)+
   geom_smooth(aes(x = year, y = white_mean), method = 'lm', color = 'grey75', se = F, linetype = 'dashed')+
-  geom_point(aes(x = year, y = total_mean), shape = 'square', color = 'grey25', size = 3)+
-  geom_point(aes(x = year, y = black_mean), shape = 'triangle', color = 'grey50', size = 3)+
-  geom_point(aes(x = year, y = white_mean), shape = 'circle', color = 'grey75', size = 3)+
-  ylab('')+
+  geom_point(aes(x = year, y = total_mean, shape = 'Total Ice'), color = 'grey25', size = 3)+
+  geom_point(aes(x = year, y = black_mean, shape = 'Black Ice'), color = 'grey50', size = 3)+
+  geom_point(aes(x = year, y = white_mean, shape = 'White Ice'), color = 'grey75', size = 3)+
+  ylab('Ice Thickness (cm)')+
   xlab('')+
   theme_classic()+
+  scale_shape_discrete('', breaks = c('Total Ice', 'Black Ice', 'White Ice'))+
   theme(
     axis.title = element_text(size = 25),
-    axis.text = element_text(size = 22)
+    axis.text = element_text(size = 22),
+    legend.text = element_text(size = 22)
   )
 
-ggsave(here('results/iq_ts_final.png'), dpi = 300, units = 'in', height = 10, width = 11)
+ggsave(here('results/figure_2a.png'), dpi = 300, units = 'in', height = 5, width = 8)
 
 # Visualize white ice ratio
 ggplot(data = iq_ts3)+

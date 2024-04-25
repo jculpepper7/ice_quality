@@ -5,7 +5,7 @@ library(here)
 library(patchwork)
 library(ggpubr)
 library(svglite)
-library(plotly)
+#library(plotly)
 library(cmocean)
 
 
@@ -54,7 +54,7 @@ ice_thk_clim2 <- replicate(length(itime_id), ice_thk_clim)
 ice_thk_anom <- ice_thk_nh - ice_thk_clim2 
 
 #Did this work? Look at a basic ice thickness map and time series
-image.plot(ice_thk_anom[,,itime_id ==2088])
+#image.plot(ice_thk_anom[,,itime_id ==2088])
 
 #Create time series 1
 thk_anom_test <- apply(ice_thk_anom, 3, mean, na.rm = T)
@@ -68,7 +68,7 @@ thk_anom_test[193] # -0.12m (12cm)
 thk_anom_test[239] # -0.21m (21cm)
 
 #time series plot
-plot(thk_anom_test, type = 'l')
+#plot(thk_anom_test, type = 'l')
 
 
 # 4. Map of ice thickness at 1C warming -----------------------------------
@@ -121,15 +121,15 @@ ice_thick_1C_map  <- ggplot()+
     axis.ticks = element_blank(),
     legend.text = element_text(size = 20),
     legend.title = element_blank(),
-    legend.position = 'right',
+    legend.position = 'none',
     legend.key.width = unit(0.5, 'cm'),
-    legend.key.height = unit(1.5, 'cm')#,
+    legend.key.height = unit(1.5, 'cm'),
     #plot.margin=unit(c(0,0,0,0),"cm"))
   )+
   
   #Map settings, adjusting the lat/long and projection
   coord_map(xlim = c(-170, 170), ylim = c(39, 75), projection = 'orthographic')+ 
-  geom_point(data = ice_clean_2, aes(x = Longitude, y = Latitude), size = 3, shape = 'circle')+
+  #geom_point(data = ice_clean_2, aes(x = Longitude, y = Latitude), size = 3, shape = 'circle')+
     
   #Title text etc.
   ggtitle('')+
@@ -137,7 +137,8 @@ ice_thick_1C_map  <- ggplot()+
   ylab('')
 ice_thick_1C_map
 
-ggsave(here('results/ice_thk_map_1C.png'), dpi = 300, units = 'in', height = 10, width = 10 )
+#ggsave(here('results/ice_thk_map_1C.png'), dpi = 300, units = 'in', height = 10, width = 10 )
+ggsave(here('results/figure_3a.pdf'), dpi = 300, units = 'in', height = 10, width = 10 )
 
 # 4b. Do the same as above but for 2C thickness----
 
@@ -180,7 +181,7 @@ ice_thick_2C_map  <- ggplot()+
   
   #Map settings, adjusting the lat/long and projection
   coord_map(xlim = c(-170, 170), ylim = c(39, 75), projection = 'orthographic')+ 
-  geom_point(data = ice_clean_2, aes(x = Longitude, y = Latitude), size = 3, shape = 'circle')+
+  #geom_point(data = ice_clean_2, aes(x = Longitude, y = Latitude), size = 3, shape = 'circle')+
   
   #Title text etc.
   ggtitle('')+
@@ -188,7 +189,8 @@ ice_thick_2C_map  <- ggplot()+
   ylab('')
 ice_thick_2C_map
 
-ggsave(here('results/ice_thk_map_2C.png'), dpi = 300, units = 'in', height = 10, width = 10 )
+#ggsave(here('results/ice_thk_map_2C_w_leg.png'), dpi = 300, units = 'in', height = 10, width = 10 )
+ggsave(here('results/figure_3b.pdf'), dpi = 300, units = 'in', height = 10, width = 10 )
 
 
 # 5. Make a time series plot of future ice thickness ----------------------
@@ -211,27 +213,34 @@ ice_ts_plt <- ggplot(data = thk_anom_ts)+
   geom_point(aes(x = 2042, y = ice_thk[193], color = '2°C'), shape = 1, size = 5, stroke = 4)+ #ice thickness anomaly at 2C Warming = -0.121m or -12.1cm
   scale_color_manual('', values = c("#E69F00", "#D55E00"))+
   xlab('') + 
-  ylab('')+
+  ylab('Ice Thickness Anomaly (m)')+
   theme_classic() +
   theme(
-    text = element_text(size = 25),
+    text = element_text(size = 40),
     legend.position = c(0.8, 0.8)
   )
 ice_ts_plt
 
-ggsave(here('results/ice_thk_ts.png'), dpi = 300, units = 'in', height = 10, width = 11)
+#ggsave(here('results/ice_thk_ts.png'), dpi = 300, units = 'in', height = 10, width = 11)
+ggsave(here('results/figure_3c.pdf'), dpi = 300, units = 'in', height = 10, width = 11)
 
 
-ggplotly(ice_ts_plt)
+#ggplotly(ice_ts_plt)
 
 
-thk_anom_ts$year[193
-                 ]
-
-
-
+thk_anom_ts$year[193]
 
 
 
+
+
+thk_anom_sd <- as.data.frame(apply(ice_thk_anom, 3, mean, na.rm = T)) %>% 
+  rename(ice_thk = 1) %>% 
+  mutate(
+    year = as.numeric(seq(1850, 2099, 1)),
+    sd_pos = sd(ice_thk),
+    #sd_neg = ice_thk - sd(ice_thk)
+  ) #%>% 
+  #select(2,1,3,4)
 
 
