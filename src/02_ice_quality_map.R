@@ -99,6 +99,7 @@ map_data <- expand.grid(lon_nh, lat_nh) %>%
   
   #Start plot, feeding in the previous dataframe from expand.grid
 ice_thick_1C_map  <- ggplot()+
+  
   geom_point(data = map_data, aes(x = lon, y = lat, color = idat), size = 2.5, shape = 'square')+
   # scale_color_viridis(name = 'Ice Duration Anomaly', 
   #                     na.value = 'transparent', 
