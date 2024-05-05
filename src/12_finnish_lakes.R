@@ -4,6 +4,7 @@
 
 library(tidyverse)
 library(here)
+library(lubridate)
 library(janitor)
 library(Tides) #Finding gaps in data
 library(TrackReconstruction) #Finding gaps in data
@@ -97,6 +98,11 @@ tot_thick_summary <- total_thickness_combined %>%
     ice_max = max(total_thickness, na.rm = TRUE)
   ) %>% 
   drop_na(ice_mean)
+
+#write_csv(tot_thick_summary, 'data/finnish_total_ice.csv')
+#write_csv(total_thickness_combined, 'data/finnish_total_ice.csv')
+
+
 
 ggplot()+
   geom_point(data = tot_thick_summary, aes(x = year, y = ice_max))+
@@ -247,6 +253,8 @@ white_ice_summary <- white_ice_combined %>%
   drop_na(white_ice_mean)
 
 #write_csv(white_ice_summary, 'data/finnish_white_ice.csv')
+#write_csv(white_ice_combined, 'data/finnish_white_ice.csv')
+
 
 ggplot()+
   geom_point(data = white_ice_summary, aes(x = year, y = white_ice_mean))+
