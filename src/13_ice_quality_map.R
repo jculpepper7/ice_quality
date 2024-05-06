@@ -189,7 +189,7 @@ ib_clean <- ice_blitz %>%
 
 hal_clean <- hal %>%
   clean_names() %>% 
-  select(
+  dplyr::select(
     1:3, 5, 7, 10, 11
   ) %>% 
   # mutate(
@@ -197,9 +197,10 @@ hal_clean <- hal %>%
   # ) %>% 
   mutate(
     site = as.factor(site_id),
-    white_ice_perc = round((white/total)*100)
+    white_ice_perc = round((white/total)*100),
+    lon = lon*-1
   ) %>% 
-  select(-site_id) %>% 
+  dplyr::select(-site_id) %>% 
   group_by(site, year) %>% 
   filter(
     white_ice_perc == max(white_ice_perc, na.rm = TRUE)
@@ -213,7 +214,7 @@ hal_clean <- hal %>%
   mutate(
     count = n()
   ) %>% 
-  select(
+  dplyr::select(
     site,
     year,
     white_ice_perc,
@@ -378,7 +379,7 @@ ggplot() +
   geom_point(
     data = white_ice_clean %>% filter(sample_2021 == 0), 
     aes(x = lon, y = lat, fill = white_ice_perc, shape = shape), 
-    size = 5, stroke = 0.2, alpha = 0.7
+    size = 5, stroke = 0.2, alpha = 0.7, color = 'white'
   )+
   #Adjust display settings
   scale_shape_manual(
@@ -387,8 +388,8 @@ ggplot() +
     )+
   scale_fill_gradient(
     limits = c(0, 100),
-    breaks = c(20, 40, 60, 80, 100),
-    labels = format(c(20, 40, 60, 80, 100)),
+    breaks = c(0, 20, 40, 60, 80, 100),
+    labels = format(c(0, 20, 40, 60, 80, 100)),
     guide = guide_colorsteps()
     )+
   xlab('')+
@@ -423,7 +424,7 @@ ggplot() +
   geom_point(
     data = white_ice_clean %>% filter(sample_2021 == 0), 
     aes(x = lon, y = lat, fill = white_ice_perc, shape = shape), 
-    size = 5, stroke = 0.2, alpha = 0.7 #shape = 21,
+    size = 5, stroke = 0.2, alpha = 0.7, color = 'white' #shape = 21,
   )+
   scale_shape_manual(
     values = c('Single Year' = 21, '<10 Years' = 22, '>10 Years' = 24), 
@@ -431,8 +432,8 @@ ggplot() +
   )+
   scale_fill_gradient(
     limits = c(0, 100),
-    breaks = c(20, 40, 60, 80, 100),
-    labels = format(c(20, 40, 60, 80, 100)),
+    breaks = c(0, 20, 40, 60, 80, 100),
+    labels = format(c(0, 20, 40, 60, 80, 100)),
     guide = guide_colorsteps()
   )+
   xlab('')+
