@@ -54,7 +54,7 @@ ice_thk_clim2 <- replicate(length(itime_id), ice_thk_clim)
 ice_thk_anom <- ice_thk_nh - ice_thk_clim2 
 
 #Did this work? Look at a basic ice thickness map and time series
-#image.plot(ice_thk_anom[,,itime_id ==2088])
+image.plot(ice_thk_anom[,,itime_id ==2088])
 
 #Create time series 1
 thk_anom_test <- apply(ice_thk_anom, 3, mean, na.rm = T)
@@ -73,24 +73,6 @@ thk_anom_test[239] # -0.21m (21cm)
 
 # 4. Map of ice thickness at 1C warming -----------------------------------
 
-# ice_thick_anom <- mapCDFtemp(lat_nh, lon_nh, ice_thk_anom[,,itime_id == 2010], 
-#                            name_cmocean = 'matter', 
-#                            direction = 1, 
-#                            #color_breaks()
-#                            limits = c(min(ice_thk_anom[,,itime_id == 2010], na.rm = T), max(ice_thk_anom[,, itime_id == 2010], na.rm = T)),
-#                            grid_size = 2.5,
-#                            titletext = '',
-#                            plot_margin = unit(c(0,0,0,0),"cm"))
-# ice_thick_anom
-
-#The above code does not allow me to add the data points from 
-#Weyhenmeyer et al., 2022. So I need to break it out of the function
-#as I do below. That code derives from script 00, but it is now
-#hard coded.
-
-
-
-
 # 4a. Need to decompose the plot and add Gesa's data----
 map_data <- expand.grid(lon_nh, lat_nh) %>%
   rename(lon = Var1, lat = Var2) %>%
@@ -100,7 +82,8 @@ map_data <- expand.grid(lon_nh, lat_nh) %>%
   #Start plot, feeding in the previous dataframe from expand.grid
 ice_thick_1C_map  <- ggplot()+
   
-  geom_point(data = map_data, aes(x = lon, y = lat, color = idat), size = 2.5, shape = 'square')+
+  #geom_point(data = map_data, aes(x = lon, y = lat, color = idat), size = 2.5, shape = 'square')+
+  geom_tile(data = ice_thk_anom[,,itime_id == 2010], aes(x = lon, y = lat, fill = idat))+
   # scale_color_viridis(name = 'Ice Duration Anomaly', 
   #                     na.value = 'transparent', 
   #                     option = 'A', 
@@ -139,7 +122,185 @@ ice_thick_1C_map  <- ggplot()+
 ice_thick_1C_map
 
 #ggsave(here('results/ice_thk_map_1C.png'), dpi = 300, units = 'in', height = 10, width = 10 )
-ggsave(here('results/figure_3a.pdf'), dpi = 300, units = 'in', height = 10, width = 10 )
+#ggsave(here('results/figure_3a.pdf'), dpi = 300, units = 'in', height = 10, width = 10 )
+
+
+
+# **4a REVISED MAP --------------------------------------------------------
+
+#Test other maps
+
+mapCDF_off <- function(lat, lon, idat) 
+{
+  #Add a map object
+  world_map <- map_data("world")
+  
+  #Create a df to plot from netCDF data
+  expand.grid(lon, lat) %>%
+    dplyr::rename(lon = Var1, lat = Var2) %>%
+    mutate(lon = ifelse(lon > 180, -(360 - lon), lon),
+           idat = as.vector(idat)) %>% 
+    
+    #Start plot, feeding in the previous df from expand.grid
+    ggplot()+
+    geom_polygon(
+      data = world_map, 
+      aes(x = long, y = lat, group = group), 
+      fill = "grey50", 
+      colour = "grey50", 
+      #alpha = 0.8
+    ) +
+    geom_tile(
+      aes(x = lon, y = lat, fill = idat, color = idat), 
+      linewidth = 1
+    )+
+    scale_fill_gradientn(
+      name = 'Ice thickness change (m)',
+      na.value = 'transparent',
+      #colors = c('#00008B', '#8D8DFF', '#FFFFFF', '#FF0C0C', '#F10000', '#D80000', '#BE0000', '#A50000', '#8B0000', '#720000'),
+      #colors = c('#00008B', '#8D8DFF', '#FFFFFF', '#DE8787', '#D35F5F', '#B53131', '#8D2626', '#651b1b', '#3D1010', '#290B0B'),
+      colors = c( '#3D1010', '#651B1B', '#8D2626', '#B53131', '#D35F5F', '#DE8787','#FFFFFF', '#8D8DFF', '#00008B' ),
+      limits = c(-0.3, 0.1
+                 #min(ice_thk_anom[,,itime_id == 2010], na.rm = TRUE),  #min is -0.239
+                 #max(ice_thk_anom[,,itime_id == 2010], na.rm = TRUE)   #max is 0.065 
+      ),
+      breaks = c(-0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1),
+      labels = format(c(-0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1)),
+      guide = guide_colorsteps()
+    )+
+    scale_color_gradientn(
+      guide = 'none',
+      na.value = 'transparent',
+      #colors = c('#00008B', '#8D8DFF', '#FFFFFF', '#DE8787', '#D35F5F', '#B53131', '#8D2626', '#651b1b', '#3D1010'),
+      colors = c( '#3D1010', '#651B1B', '#8D2626', '#B53131', '#D35F5F', '#DE8787','#FFFFFF', '#8D8DFF', '#00008B' ),
+      limits = c(-0.3, 0.1
+                 # min(rw_ice_on_1c_anom, na.rm = TRUE),  #min is -12
+                 # max(rw_ice_on_1c_wht_anom, na.rm = TRUE)   #max is 93
+      ),
+    )+
+    
+    #Add the map layer
+    coord_map("ortho", orientation = c(90, 0, 0)) +
+    
+    # Removes Axes and labels
+    scale_x_continuous(breaks = NULL)+
+    
+    # Adds axes
+    geom_hline(aes(yintercept = 180), linewidth = 0.5)  +
+    
+    #Basic theme settings
+    theme_void()+
+    
+    # Change theme to remove axes and ticks
+    theme(panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.ticks=element_blank(),
+          legend.position = 'bottom',
+          legend.title.position = 'bottom',
+          legend.key.width = unit(1.25, 'in'),
+          legend.title = element_text(hjust = 0.5, size = 20),
+          legend.text = element_text(size = 20)
+    )+
+    xlab("") + 
+    ylab("") 
+  
+}
+
+y <- mapCDF_off(lat_nh, lon_nh, ice_thk_anom[,,itime_id == 2010])
+#y <- mapCDF_off(lat_nh, lon_nh, ice_thk_anom[,,itime_id == 2042])
+
+y
+
+cairo_pdf(here('results/revised_maps/figure_3a.pdf'))
+#cairo_pdf(here('results/revised_maps/figure_3b.pdf'))
+
+print(y)
+dev.off()
+
+# **ALT REVISED MAP -------------------------------------------------------
+
+
+mapCDF_off <- function(lat, lon, idat) 
+{
+  #Add a map object
+  world_map <- map_data("world")
+  
+  #Create a df to plot from netCDF data
+  expand.grid(lon, lat) %>%
+    dplyr::rename(lon = Var1, lat = Var2) %>%
+    mutate(lon = ifelse(lon > 180, -(360 - lon), lon),
+           idat = as.vector(idat)) %>% 
+    
+    #Start plot, feeding in the previous df from expand.grid
+    ggplot()+
+    geom_polygon(
+      data = world_map, 
+      aes(x = long, y = lat, group = group), 
+      fill = "grey50", 
+      colour = "grey50", 
+      #alpha = 0.8
+    ) +
+    geom_tile(
+      aes(x = lon, y = lat, fill = idat, color = idat), 
+      linewidth = 1
+    )+
+    scale_fill_viridis_b(
+      na.value = 'transparent',
+      limits = c(-0.3, 0.1),
+      name = 'Ice thickness change (m)',
+      breaks = c(-0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1),
+      labels = format(c(-0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1)),
+      guide = guide_colorsteps()
+    )+
+    scale_color_viridis_b(
+      na.value = 'transparent',
+      limits = c(-0.3, 0.1),
+      name = 'Ice thickness change (m)',
+      breaks = c(-0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1),
+      labels = format(c(-0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1)),
+      guide = guide_colorsteps()
+    )+
+    
+    #Add the map layer
+    coord_map("ortho", orientation = c(90, 0, 0)) +
+    
+    # Removes Axes and labels
+    scale_x_continuous(breaks = NULL)+
+    
+    # Adds axes
+    geom_hline(aes(yintercept = 180), linewidth = 0.5)  +
+    
+    #Basic theme settings
+    theme_void()+
+    
+    # Change theme to remove axes and ticks
+    theme(panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.ticks=element_blank(),
+          legend.position = 'bottom',
+          legend.title.position = 'bottom',
+          legend.key.width = unit(1.25, 'in'),
+          legend.title = element_text(hjust = 0.5, size = 20),
+          legend.text = element_text(size = 20)
+    )+
+    xlab("") + 
+    ylab("") 
+  
+}
+
+#y <- mapCDF_off(lat_nh, lon_nh, ice_thk_anom[,,itime_id == 2010])
+y <- mapCDF_off(lat_nh, lon_nh, ice_thk_anom[,,itime_id == 2042])
+
+y
+
+#cairo_pdf(here('results/revised_maps/figure_3a_alt.pdf'))
+cairo_pdf(here('results/revised_maps/figure_3b_alt.pdf'))
+
+print(y)
+dev.off()
+
 
 # 4b. Do the same as above but for 2C thickness----
 
@@ -230,10 +391,6 @@ ggsave(here('results/figure_3c.pdf'), dpi = 300, units = 'in', height = 10, widt
 
 
 thk_anom_ts$year[193]
-
-
-
-
 
 thk_anom_sd <- as.data.frame(apply(ice_thk_anom, 3, mean, na.rm = T)) %>% 
   rename(ice_thk = 1) %>% 
