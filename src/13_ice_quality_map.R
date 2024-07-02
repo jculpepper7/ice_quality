@@ -111,7 +111,7 @@ fin_clean <- fin_ice %>%
 #**Clean NTL data----
 
 ntl_clean <- ntl_white_ice %>% 
-  select(
+  dplyr::select(
     lakeid,
     year4, daynum, sampledate,
     lat, lon,
@@ -137,7 +137,7 @@ ntl_clean <- ntl_white_ice %>%
   mutate(
     count = n()
   ) %>% 
-  select(
+  dplyr::select(
     site,
     year,
     white_ice_perc,

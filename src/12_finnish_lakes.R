@@ -380,9 +380,11 @@ ntl_ice_summary <- ntl_clean %>%
   ) #%>% 
   #drop_na(white_ice_mean)
 # 
-# ggplot(data = ntl_ice_summary)+
-#   #geom_point(aes(x = water_year, y = ice_mean, color = lake_id))+
-#   geom_smooth(aes(x = water_year, y = white_ice_mean, color = lake_id), method = lm, se = F)
+# ggplot()+
+#   geom_point(data = ntl_ice_summary, aes(x = water_year, y = black_ice_mean))+
+#   theme_bw()+
+#   facet_wrap(~lake_id)+
+#   geom_smooth(data = ntl_ice_summary, aes(x = water_year, y = black_ice_mean), se = F)
 
 # 3. Time series analysis -------------------------------------------------
 
@@ -439,6 +441,7 @@ white_ice_trends <- white_ice_summary %>%
     mk_wht_max = mannKen(white_ice_max)$p.value,
     sen_wht_max = mannKen(white_ice_max)$sen.slope,
   )
+
 
 white_ice_trends %>% 
   filter(mk_wht_mean<0.05) #%>% 
