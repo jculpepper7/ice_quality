@@ -358,12 +358,36 @@ ggsave(here('results/quality_map_2024.05.03.pdf'), dpi = 300, width = 10, height
 # 6. Make a N. American Map -----------------------------------------------
 
 world <- ne_countries(scale = 'medium', returnclass = 'sf')
+lakes <- rnaturalearth::ne_download(scale = 'medium', 
+                                    type = 'lakes', 
+                                    category = 'physical') %>% 
+  sf::st_as_sf(lakes)
 
 theme_set(theme_bw())
 
 #Map of NA
 ggplot() +
   geom_sf(data = world)+
+  geom_sf(data = lakes %>% filter(name == 'Lake Michigan'),
+          mapping = aes(geometry = geometry),
+          color = "black",
+          fill = "lightblue")+ 
+  geom_sf(data = lakes %>% filter(name == 'Lake Huron'),
+          mapping = aes(geometry = geometry),
+          color = "black",
+          fill = "lightblue")+
+  geom_sf(data = lakes %>% filter(name == 'Lake Erie'),
+          mapping = aes(geometry = geometry),
+          color = "black",
+          fill = "lightblue")+
+  geom_sf(data = lakes %>% filter(name == 'Lake Ontario'),
+          mapping = aes(geometry = geometry),
+          color = "black",
+          fill = "lightblue")+
+  geom_sf(data = lakes %>% filter(name == 'Lake Superior'),
+          mapping = aes(geometry = geometry),
+          color = "black",
+          fill = "lightblue")+
   coord_sf(
     xlim = c(-115, -70), 
     ylim = c(35,55), 
@@ -402,7 +426,7 @@ ggplot() +
     text = element_text(size = 20)
   )
 
-ggsave(here('results/NA_map_2024.05.03.pdf'), dpi = 300, width = 10, height = 9, units = 'in')
+ggsave(here('results/NA_map_revised.pdf'), dpi = 300, width = 10, height = 9, units = 'in')
 
 # 7. Map a European Map ---------------------------------------------------
   
