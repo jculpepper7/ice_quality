@@ -349,10 +349,8 @@ ggplot() +
         axis.ticks=element_blank(),
         text = element_text(size = 30))
   
-ggsave(here('results/quality_map_2024.05.03.pdf'), dpi = 300, width = 10, height = 10, units = 'in')
+#ggsave(here('results/quality_map_2024.05.03.pdf'), dpi = 300, width = 10, height = 10, units = 'in')
 
-
-#####################################################
 
 
 # 6. Make a N. American Map -----------------------------------------------
@@ -426,7 +424,7 @@ ggplot() +
     text = element_text(size = 20)
   )
 
-ggsave(here('results/NA_map_revised.pdf'), dpi = 300, width = 10, height = 9, units = 'in')
+#ggsave(here('results/NA_map_revised.pdf'), dpi = 300, width = 10, height = 9, units = 'in')
 
 # 7. Map a European Map ---------------------------------------------------
   
@@ -471,5 +469,27 @@ ggplot() +
   )
 
 
-ggsave(here('results/Euro_map_2024.05.03.pdf'), dpi = 300, width = 10, height = 9, units = 'in')
+#ggsave(here('results/Euro_map_2024.05.03.pdf'), dpi = 300, width = 10, height = 9, units = 'in')
 
+
+
+
+# 4. Combine the dataframes -----------------------------------------------
+
+white_ice_clean2 <- ntl_clean %>% 
+  bind_rows(fin_clean, ib_clean, hal_clean, rus_clean) %>% 
+  group_by(site) %>% 
+  mutate(
+    year_min = min(year, na.rm = TRUE),
+    year_max = max(year, na.rm = TRUE)
+  ) %>% 
+  filter(
+    row_number() == 1
+  ) %>% 
+  dplyr::select(
+    -c(
+      white_ice_perc,
+      year
+    )
+  )
+write_csv(white_ice_clean2, here('data/combined_ice_data_request.csv'))
