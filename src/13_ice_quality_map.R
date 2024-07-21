@@ -475,6 +475,8 @@ ggplot() +
 
 # 8. Make NTL inset plot --------------------------------------------------
 
+#Without Trout Bog Lake
+
 ntl_clean2 <- ntl_white_ice %>% 
   dplyr::select(
     lakeid,
@@ -487,17 +489,59 @@ ntl_clean2 <- ntl_white_ice %>%
     sampledate = mdy(sampledate),
     year = if_else(month(sampledate)>=10, year4+1, year4), #water year, but calling year to fit with Finnish dataframe
   ) %>% 
-  # group_by(site, year, lat, lon) %>%
-  # mutate(
-  #   white_ice_perc = round((whiteice/totice)*100)
-  # ) %>% 
-  # filter(
-  #   white_ice_perc == max(white_ice_perc, na.rm = TRUE)
-  # ) %>% 
-  # # summarise(
-  # #   white_ice_mean = mean(whiteice, na.rm = TRUE),
-  # #   white_ice_max = max(whiteice, na.rm = TRUE)
-  # # ) %>%
+  group_by(site) %>% 
+  mutate(
+    count = n()
+  ) %>% 
+  filter(
+    site != 'TB'
+  ) %>% 
+  group_by(year) %>% 
+  mutate(
+    #total ice 
+    mean_totice = mean(totice, na.rm = TRUE),
+    sd_totice_high = mean_totice + sd(totice, na.rm = TRUE),
+    sd_totice_low = mean_totice - sd(totice, na.rm = TRUE),
+    sd_totice_low = if_else(
+      sd_totice_low < 0, 0, sd_totice_low
+    ),
+    max_totice = max(totice, na.rm = TRUE),
+    min_totice = min(totice, na.rm = TRUE),
+    #white ice
+    mean_whiteice = mean(whiteice, na.rm = TRUE),
+    sd_whiteice_high = mean_whiteice + sd(whiteice, na.rm = TRUE),
+    sd_whiteice_low = mean_whiteice - sd(whiteice, na.rm = TRUE),
+    sd_whiteice_low = if_else(
+      sd_whiteice_low < 0, 0, sd_whiteice_low
+    ),
+    max_whiteice = max(whiteice, na.rm = TRUE),
+    min_whiteice = min(whiteice, na.rm = TRUE),
+    #"blue" ice (i.e., black ice)
+    mean_blackice = mean(blueice, na.rm = TRUE),
+    sd_blackice_high = mean_blackice + sd(blueice, na.rm = TRUE),
+    sd_blackice_low = mean_blackice - sd(blueice, na.rm = TRUE),
+    sd_blackice = sd(blueice, na.rm = TRUE),
+    sd_blackice_low = if_else(
+      sd_blackice_low < 0, 0, sd_blackice_low
+    ),
+    max_blackice = max(blueice, na.rm = TRUE),
+    min_blackice = min(blueice, na.rm = TRUE)
+  )
+
+#With Trout Bog Lake
+
+ntl_clean3 <- ntl_white_ice %>% 
+  dplyr::select(
+    lakeid,
+    year4, daynum, sampledate,
+    lat, lon,
+    totice, whiteice, blueice
+  ) %>% 
+  mutate(
+    site = as.factor(lakeid),
+    sampledate = mdy(sampledate),
+    year = if_else(month(sampledate)>=10, year4+1, year4), #water year, but calling year to fit with Finnish dataframe
+  ) %>% 
   group_by(site) %>% 
   mutate(
     count = n()
@@ -508,15 +552,30 @@ ntl_clean2 <- ntl_white_ice %>%
     mean_totice = mean(totice, na.rm = TRUE),
     sd_totice_high = mean_totice + sd(totice, na.rm = TRUE),
     sd_totice_low = mean_totice - sd(totice, na.rm = TRUE),
-    #"blue" ice (i.e., black ice)
+    sd_totice_low = if_else(
+      sd_totice_low < 0, 0, sd_totice_low
+    ),
+    max_totice = max(totice, na.rm = TRUE),
+    min_totice = min(totice, na.rm = TRUE),
+    #white ice
     mean_whiteice = mean(whiteice, na.rm = TRUE),
     sd_whiteice_high = mean_whiteice + sd(whiteice, na.rm = TRUE),
     sd_whiteice_low = mean_whiteice - sd(whiteice, na.rm = TRUE),
-    #white ice 
+    sd_whiteice_low = if_else(
+      sd_whiteice_low < 0, 0, sd_whiteice_low
+    ),
+    max_whiteice = max(whiteice, na.rm = TRUE),
+    min_whiteice = min(whiteice, na.rm = TRUE),
+    #"blue" ice (i.e., black ice)
     mean_blackice = mean(blueice, na.rm = TRUE),
     sd_blackice_high = mean_blackice + sd(blueice, na.rm = TRUE),
     sd_blackice_low = mean_blackice - sd(blueice, na.rm = TRUE),
-    sd_blackice = sd(blueice, na.rm = TRUE)
+    sd_blackice = sd(blueice, na.rm = TRUE),
+    sd_blackice_low = if_else(
+      sd_blackice_low < 0, 0, sd_blackice_low
+    ),
+    max_blackice = max(blueice, na.rm = TRUE),
+    min_blackice = min(blueice, na.rm = TRUE)
   )
 
 #**8a. Plot of NTL total ice thickness----
@@ -538,10 +597,13 @@ ggsave(here('results/figure_4f_v1.pdf'), dpi = 300, width = 5, height = 3)
 
 #**8b. Plot of NTL black ice thickness----
 black_ice_plt <- ggplot(data = ntl_clean2)+
-  geom_line(aes(x = sampledate, y = sd_blackice_high), color = 'transparent')+ #linetype = 'dashed', linewidth = 1.25
-  geom_line(aes(x = sampledate, y = sd_blackice_low), color = 'transparent')+ #linetype = 'dashed', linewidth = 1.25
+  geom_line(aes(x = sampledate, y = sd_blackice_high), color = 'transparent')+ 
+  geom_line(aes(x = sampledate, y = sd_blackice_low), color = 'transparent')+
+  #geom_line(aes(x = sampledate, y = min_blackice), color = 'transparent')+ 
+  #geom_line(aes(x = sampledate, y = max_blackice), color = 'transparent')+ 
   geom_ribbon(aes(x = sampledate, ymin = sd_blackice_low, ymax = sd_blackice_high), fill = 'lightblue')+
-  geom_line(data = ntl_clean2 %>% 
+  #geom_ribbon(aes(x = sampledate, ymin = min_blackice, ymax = max_blackice), fill = 'lightblue')+
+  geom_line(data = ntl_clean3 %>% 
               filter(site == 'TB') %>% 
               group_by(year) %>% 
               mutate(blueice = mean(blueice)) %>% 
@@ -550,18 +612,22 @@ black_ice_plt <- ggplot(data = ntl_clean2)+
   geom_line(aes(x = sampledate, y = mean_blackice), linewidth = 0.5)+
   theme_classic()+
   xlab('')+
-  ylab('Black Ice Thickness (cm)')
+  ylab('Black Ice Thickness (cm)')+
+  ylim(c(0,70))
 
 black_ice_plt
 
-ggsave(here('results/figure_4f_v2.pdf'), dpi = 300, width = 5, height = 3)
+ggsave(here('results/figure_4f_v4_wo_TBmean.pdf'), dpi = 300, width = 5, height = 3)
 
 #**8c. Plot of NTL white ice thickness----
 white_ice_plt <- ggplot(data = ntl_clean2)+
-  geom_line(aes(x = sampledate, y = sd_whiteice_high), color = 'transparent')+ #linetype = 'dashed', linewidth = 1.25
-  geom_line(aes(x = sampledate, y = sd_whiteice_low), color = 'transparent')+ #linetype = 'dashed', linewidth = 1.25
+  geom_line(aes(x = sampledate, y = sd_whiteice_high), color = 'transparent')+ 
+  geom_line(aes(x = sampledate, y = sd_whiteice_low), color = 'transparent')+
+  #geom_line(aes(x = sampledate, y = min_whiteice), color = 'transparent')+ #linetype = 'dashed', linewidth = 1.25
+  #geom_line(aes(x = sampledate, y = max_whiteice), color = 'transparent')+ #linetype = 'dashed', linewidth = 1.25
   geom_ribbon(aes(x = sampledate, ymin = sd_whiteice_low, ymax = sd_whiteice_high), fill = 'lightblue')+
-  geom_line(data = ntl_clean2 %>% 
+  #geom_ribbon(aes(x = sampledate, ymin = min_whiteice, ymax = max_whiteice), fill = 'lightblue')+
+  geom_line(data = ntl_clean3 %>% 
               filter(site == 'TB') %>% 
               group_by(year) %>% 
               mutate(whiteice = mean(whiteice)) %>% 
@@ -570,11 +636,12 @@ white_ice_plt <- ggplot(data = ntl_clean2)+
   geom_line(aes(x = sampledate, y = mean_whiteice), linewidth = 0.5)+
   theme_classic()+
   xlab('')+
-  ylab('White Ice Thickness (cm)')
+  ylab('White Ice Thickness (cm)')+
+  ylim(c(0,70))
 
 white_ice_plt
 
-ggsave(here('results/figure_4f_v3.pdf'), dpi = 300, width = 5, height = 3)
+ggsave(here('results/figure_4f_v5_wo_TBmean.pdf'), dpi = 300, width = 5, height = 3)
 
 # 4. Combine the dataframes -----------------------------------------------
 
